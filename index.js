@@ -25,8 +25,15 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    app.get("/db", (req, res) => {
-      res.send({ message: "hi from database " });
+    const languageFusionSchoolDB = client.db("languageFusionSchoolDB");
+    const classesCollection =
+      languageFusionSchoolDB.collection("classesCollection");
+
+    // classes api
+    app.get("/classes", async (req, res) => {
+      const classesCursor = classesCollection.find();
+      const result = await classesCursor.toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
