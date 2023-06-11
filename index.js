@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    /* await */ client.connect();
 
     const languageFusionSchoolDB = client.db("languageFusionSchoolDB");
     const classesCollection =
@@ -31,6 +31,16 @@ async function run() {
 
     // classes api
     app.get("/classes", async (req, res) => {
+      const { type, limit } = req.query;
+      if (type && limit) {
+        const query = { type };
+        const options = { projection: { image: 1, name: 1 } };
+        const classesCursor = classesCollection
+          .find(query, options)
+          .limit(parseInt(limit));
+        const result = await classesCursor.toArray();
+        return res.send(result);
+      }
       const classesCursor = classesCollection.find();
       const result = await classesCursor.toArray();
       res.send(result);
