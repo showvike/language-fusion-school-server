@@ -31,6 +31,8 @@ async function run() {
     const instructorsCollection = languageFusionSchoolDB.collection(
       "instructorsCollection"
     );
+    const usersCollection =
+      languageFusionSchoolDB.collection("usersCollection");
 
     // common function
     const commonFunction = async (req, res, collection) => {
@@ -55,6 +57,19 @@ async function run() {
     // instructors api
     app.get("/instructors", async (req, res) => {
       commonFunction(req, res, instructorsCollection);
+    });
+
+    // users api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const query = { email: user.email };
+      const existingUser = await usersCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exists" });
+      }
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
