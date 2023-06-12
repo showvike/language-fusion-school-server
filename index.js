@@ -36,10 +36,18 @@ async function run() {
 
     // common function
     const commonFunction = async (req, res, collection) => {
-      const { type, limit } = req.query;
-      if (type && limit) {
-        const query = { type };
-        const options = { projection: { image: 1, name: 1 } };
+      const { type, limit, email } = req.query;
+      if (email || (type && limit)) {
+        let query = {};
+        let options = {};
+        if (type && limit) {
+          query = { type };
+          options = { projection: { image: 1, name: 1 } };
+        }
+        if (email) {
+          query = { email };
+          options = { projection: { role: 1 } };
+        }
         const cursor = collection.find(query, options).limit(parseInt(limit));
         const result = await cursor.toArray();
         return res.send(result);
@@ -60,6 +68,10 @@ async function run() {
     });
 
     // users api
+    app.get("/users", async (req, res) => {
+      commonFunction(req, res, usersCollection);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       console.log(user);
