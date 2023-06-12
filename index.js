@@ -28,22 +28,33 @@ async function run() {
     const languageFusionSchoolDB = client.db("languageFusionSchoolDB");
     const classesCollection =
       languageFusionSchoolDB.collection("classesCollection");
+    const instructorsCollection = languageFusionSchoolDB.collection(
+      "instructorsCollection"
+    );
 
-    // classes api
-    app.get("/classes", async (req, res) => {
+    // common function
+    const commonFunction = async (req, res, collection) => {
       const { type, limit } = req.query;
       if (type && limit) {
         const query = { type };
         const options = { projection: { image: 1, name: 1 } };
-        const classesCursor = classesCollection
-          .find(query, options)
-          .limit(parseInt(limit));
-        const result = await classesCursor.toArray();
+        const cursor = collection.find(query, options).limit(parseInt(limit));
+        const result = await cursor.toArray();
         return res.send(result);
       }
-      const classesCursor = classesCollection.find();
-      const result = await classesCursor.toArray();
+      const cursor = collection.find();
+      const result = await cursor.toArray();
       res.send(result);
+    };
+
+    // classes api
+    app.get("/classes", async (req, res) => {
+      commonFunction(req, res, classesCollection);
+    });
+
+    // instructors api
+    app.get("/instructors", async (req, res) => {
+      commonFunction(req, res, instructorsCollection);
     });
 
     // Send a ping to confirm a successful connection
