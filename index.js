@@ -94,13 +94,21 @@ async function run() {
       }
 
       const query = { email: email };
-      const result = await cartCollection.find(query).toArray();
+      const cursor = cartCollection.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
     app.post("/carts", async (req, res) => {
       const item = req.body;
       const result = await cartCollection.insertOne(item);
+      res.send(result);
+    });
+
+    app.delete("/carts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     });
 
