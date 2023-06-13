@@ -37,12 +37,12 @@ async function run() {
 
     // common function
     const commonFunction = async (req, res, collection) => {
-      const { role, limit, email } = req.query;
-      if (limit || role || email) {
+      const { role, limit, email, status, instructor_email } = req.query;
+      if (limit || role || email || status || instructor_email) {
         let query = {};
         let options = {};
         if (role) {
-          query = { role: role };
+          query = { role };
         }
         if (limit) {
           options = { projection: { image: 1, name: 1 } };
@@ -50,6 +50,12 @@ async function run() {
         if (email) {
           query = { email };
           options = { projection: { role: 1 } };
+        }
+        if (status) {
+          query = { status };
+        }
+        if (instructor_email) {
+          query = { instructor_email };
         }
         const cursor = collection.find(query, options).limit(parseInt(limit));
         const result = await cursor.toArray();
