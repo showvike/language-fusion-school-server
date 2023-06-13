@@ -37,12 +37,14 @@ async function run() {
 
     // common function
     const commonFunction = async (req, res, collection) => {
-      const { type, limit, email } = req.query;
-      if (email || (type && limit)) {
+      const { role, limit, email } = req.query;
+      if (limit || role || email) {
         let query = {};
         let options = {};
-        if (type && limit) {
-          query = { type };
+        if (role) {
+          query = { role: role };
+        }
+        if (limit) {
           options = { projection: { image: 1, name: 1 } };
         }
         if (email) {
@@ -63,9 +65,10 @@ async function run() {
       commonFunction(req, res, classesCollection);
     });
 
-    // instructors api
-    app.get("/instructors", async (req, res) => {
-      commonFunction(req, res, instructorsCollection);
+    app.post("/classes", async (req, res) => {
+      const item = req.body;
+      const result = await classesCollection.insertOne(item);
+      res.send(result);
     });
 
     // users api
