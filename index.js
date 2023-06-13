@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
@@ -33,6 +33,7 @@ async function run() {
     );
     const usersCollection =
       languageFusionSchoolDB.collection("usersCollection");
+    const cartCollection = languageFusionSchoolDB.collection("cartCollection");
 
     // common function
     const commonFunction = async (req, res, collection) => {
@@ -81,6 +82,13 @@ async function run() {
         return res.send({ message: "user already exists" });
       }
       const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // class cart
+    app.post("/carts", async (req, res) => {
+      const item = req.body;
+      const result = await cartCollection.insertOne(item);
       res.send(result);
     });
 
