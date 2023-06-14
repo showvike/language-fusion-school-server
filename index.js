@@ -114,6 +114,30 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const { status, feedback } = req.query;
+      console.log(id, status);
+      const filter = { _id: new ObjectId(id) };
+      let updateDoc;
+      if (status) {
+        updateDoc = {
+          $set: {
+            status,
+          },
+        };
+      }
+      if (feedback) {
+        updateDoc = {
+          $set: {
+            feedback,
+          },
+        };
+      }
+      const result = await classesCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     app.delete("/carts/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
