@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.PAYMENT_GATEWAY_SK);
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -56,6 +57,8 @@ async function run() {
     const usersCollection =
       languageFusionSchoolDB.collection("usersCollection");
     const cartCollection = languageFusionSchoolDB.collection("cartCollection");
+    const paymentCollection =
+      languageFusionSchoolDB.collection("paymentCollection");
 
     // jwt api
     app.post("/jwt", (req, res) => {
@@ -191,11 +194,9 @@ async function run() {
     // class cart apis
     app.get("/carts", async (req, res) => {
       const email = req.query.email;
-
       if (!email) {
         res.send([]);
       }
-
       const query = { email: email };
       const cursor = cartCollection.find(query);
       const result = await cursor.toArray();
@@ -237,6 +238,40 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
       res.send(result);
+    });
+
+    // create payment intent
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    // payment apis
+    app.get("/payments", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+      }
+      const query = { email: email };
+      const result = await paymentCollection
+        .find(query)
+        .sort({ date: -1 })
+        .toArray();
+      res.send(result);
+    });
+
+    app.post("/payments", verifyJWT, async (req, res) => {
+      const payment = req.body;
+      const insertResult = await paymentCollection.insertOne(payment);
+      res.send(insertResult);
     });
 
     // Send a ping to confirm a successful connection
