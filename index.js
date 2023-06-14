@@ -94,6 +94,20 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const { role } = req.query;
+      console.log(id, role);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     // class cart apis
     app.get("/carts", async (req, res) => {
       const email = req.query.email;
